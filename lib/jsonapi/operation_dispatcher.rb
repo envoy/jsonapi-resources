@@ -3,11 +3,13 @@ module JSONAPI
 
     def initialize(transaction: lambda { |&block| block.yield },
                    rollback: lambda { },
-                   server_error_callbacks: [])
+                   server_error_callbacks: [],
+                   controller: nil)
 
       @transaction = transaction
       @rollback = rollback
       @server_error_callbacks = server_error_callbacks
+      @controller = controller
     end
 
     def process(operations)
@@ -54,9 +56,9 @@ module JSONAPI
     end
 
     def process_operation(operation)
-      with_default_handling do 
+      with_default_handling do
         operation.process
-      end        
+      end
     end
 
     def with_default_handling(&block)
@@ -76,8 +78,8 @@ module JSONAPI
     end
 
     def safe_run_callback(callback, error)
-      begin 
-        callback.call(error)
+      begin
+        callback.call(error, @controller)
       rescue => e
         Rails.logger.error { "Error in error handling callback: #{e.message} #{e.backtrace.join("\n")}" }
         internal_server_error = JSONAPI::Exceptions::InternalServerError.new(e)

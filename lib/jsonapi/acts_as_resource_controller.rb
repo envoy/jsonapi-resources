@@ -61,6 +61,7 @@ module JSONAPI
     def process_request
       @request = JSONAPI::RequestParser.new(params, context: context,
                                             key_formatter: key_formatter,
+                                            controller: self,
                                             server_error_callbacks: (self.class.server_error_callbacks || []))
       unless @request.errors.empty?
         render_errors(@request.errors)
@@ -96,6 +97,7 @@ module JSONAPI
     def operation_dispatcher
       @operation_dispatcher ||= JSONAPI::OperationDispatcher.new(transaction: transaction,
                                                                  rollback: rollback,
+                                                                 controller: self,
                                                                  server_error_callbacks: @request.server_error_callbacks)
     end
 
@@ -262,9 +264,9 @@ module JSONAPI
         end
 
         method_callbacks = args.map do |method|
-          ->(error) do
+          ->(error, controller) do
             if self.respond_to? method
-              send(method, error)
+              send(method, error, controller)
             else
               Rails.logger.warn("#{method} not defined on #{self}, skipping error callback")
             end

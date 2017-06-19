@@ -415,7 +415,7 @@ class OperationDispatcherTest < Minitest::Test
     error = StandardError.new
 
     check = false
-    callback = ->(error) { check = true }
+    callback = ->(error, controller) { check = true }
 
     op.send(:safe_run_callback, callback, error)
     assert check
@@ -425,7 +425,7 @@ class OperationDispatcherTest < Minitest::Test
     op = JSONAPI::OperationDispatcher.new
     error = StandardError.new
 
-    callback = ->(error) { nil.explosions }
+    callback = ->(error, controller) { nil.explosions }
     result = op.send(:safe_run_callback, callback, error)
 
     assert_instance_of(JSONAPI::ErrorsOperationResult, result)

@@ -23,6 +23,7 @@ module JSONAPI
       @paginator = nil
       @id = nil
       @server_error_callbacks = options.fetch(:server_error_callbacks, [])
+      @controller = options[:controller]
 
       setup_action(@params)
     end
